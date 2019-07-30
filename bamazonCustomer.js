@@ -13,6 +13,40 @@ var connection = mysql.createConnection({
   database: "bamazon_db"
 });
 
+var purchaseItem = function() {
+  inquirer
+    .prompt([
+      {
+        name: "purchaseID",
+        message: "Enter the ID of the item you'd like to purchase.",
+        type: "input"
+      },
+      {
+        name: "quantity",
+        message: "How many would you like to purchase?",
+        type: "input"
+      }
+    ])
+    .then(function(answer) {
+      connection.query(
+        "SELECT stock_quantity FROM products WHERE ?",
+        {
+          item_id: answer.purchaseID
+        },
+        function(err, res) {
+          if (err) throw err;
+          console.log(res);
+          if (res[0].stock_quantity >= answer.quantity) {
+            console.log("enough stock for order");
+          } else {
+            console.log("Insufficient quantity in stock!");
+          }
+          connection.end();
+        }
+      );
+    });
+};
+
 connection.connect(function(err) {
   if (err) throw err;
   connection.query("SELECT * FROM products", function(err, res) {
@@ -36,6 +70,6 @@ connection.connect(function(err) {
 
     console.log(productsTable.toString());
 
-    connection.end();
+    purchaseItem();
   });
 });
